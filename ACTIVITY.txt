@@ -1,0 +1,21 @@
+addGrade (id: Student, course: Course, courseGrade: CourseGrade) : void
+
+
+Write down the testable behaviors for the satisfaction condition: “Add a new grade for an existing student”
+
+- be able to retrieve grade entered
+- check Student exists in db
+- check courseGrade is >= 0 and <= 100
+
+Identify at least two exceptional conditions or design decisions associated with these testable behaviors
+
+- If student already has a grade, it will be updated
+- Throw exception for invalid courseGrade or Student
+
+
+Write Jest tests for your testable behaviors
+
+
+
+Implement a method addGrade that passes your tests.
+

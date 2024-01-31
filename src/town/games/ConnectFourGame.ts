@@ -1,6 +1,14 @@
 import Player from '../../lib/Player';
 import { ConnectFourGameState, ConnectFourMove, GameMove } from '../../types/CoveyTownSocket';
 import Game from './Game';
+import InvalidParametersError, {
+  GAME_FULL_MESSAGE,
+  GAME_NOT_IN_PROGRESS_MESSAGE,
+  BOARD_POSITION_NOT_EMPTY_MESSAGE,
+  MOVE_NOT_YOUR_TURN_MESSAGE,
+  PLAYER_ALREADY_IN_GAME_MESSAGE,
+  PLAYER_NOT_IN_GAME_MESSAGE,
+} from '../../lib/InvalidParametersError';
 
 /**
  * A ConnectFourGame is a Game that implements the rules of Connect Four.
@@ -53,7 +61,32 @@ export default class ConnectFourGame extends Game<ConnectFourGameState, ConnectF
    *
    * @param player the player to join the game
    */
-  protected _join(player: Player): void {}
+  protected _join(player: Player): void {
+    if (this.state.red === player.id || this.state.yellow === player.id) {
+      throw new InvalidParametersError(PLAYER_ALREADY_IN_GAME_MESSAGE);
+    }
+
+    if (!this.state.red) {
+      this.state = {
+        ...this.state,
+        red: player.id,
+      };
+    } else if (!this.state.yellow) {
+      this.state = {
+        ...this.state,
+        yellow: player.id,
+      };
+    } else {
+      throw new InvalidParametersError(GAME_FULL_MESSAGE);
+    }
+    
+    if (this.state.red && this.state.yellow) {
+      this.state = {
+        ...this.state,
+        status: 'WAITING_TO_START',
+      };
+    }
+  }
 
   /**
    * Removes a player from the game.
@@ -68,8 +101,30 @@ export default class ConnectFourGame extends Game<ConnectFourGameState, ConnectF
    * @param player The player to remove from the game
    * @throws InvalidParametersError if the player is not in the game (PLAYER_NOT_IN_GAME_MESSAGE)
    */
-  protected _leave(player: Player): void {}
+  protected _leave(player: Player): void {
+    if (this._players.filter(p => p.id !== player.id)) {
+      throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
+    }
 
+    if (this.state.status === 'IN_PROGRESS') {
+      this.state = {
+        ...this.state,
+        status: 'OVER',
+        winner:  (player.id === this.state.red) ? this.state.yellow : this.state.red,
+      };
+    } else if (this.state.status === 'WAITING_TO_START') {
+      this.state = {
+        ...this.state,
+        status: 'WAITING_FOR_PLAYERS',
+      };
+    }
+
+    this.state = {
+      ...this.state,
+      red: (player.id === this.state.red) ? "" : this.state.red,
+      yellow: (player.id === this.state.yellow) ? "" : this.state.yellow
+    };
+  }
   /**
    * Applies a move to the game.
    * Uses the player's ID to determine which color they are playing as (ignores move.gamePiece).

@@ -7,13 +7,13 @@ import {
 import { ToDoItem } from './types'
 import { ToDoItemDisplay } from './ToDoItemDisplay'
 
-function handleSort(event, title) {
-  event.preventDefault()  // magic, sorry.
-  
-  if (title === '') {return}   // ignore blank button presses
-}
+export function ToDoListDisplay(props: { items: ToDoItem[] , onDelete:(key:number) => void , onSort:() => void}) {
+  function handleSort(event) {
+    event.preventDefault()  // magic, sorry.
+    
+    props.onSort()
+  }
 
-export function ToDoListDisplay(props: { items: ToDoItem[] , onDelete:(key:number) => void }) {
   return (
     <Table>      
       <Tbody>
@@ -21,13 +21,10 @@ export function ToDoListDisplay(props: { items: ToDoItem[] , onDelete:(key:numbe
         <Th>Title</Th>
         <Th>Priority</Th>
         <Th>Delete</Th>
-        <Box>
-          <Button bg='lightgreen' type="button" onClick={handleSort} width={100}> Sort</Button>
-        </Box>
       </Tr>
         {
           props.items.map((eachItem) => 
-              <ToDoItemDisplay item={eachItem} key={eachItem.key} onDelete={props.onDelete} />)
+              <ToDoItemDisplay item={eachItem} key={eachItem.key} onDelete={props.onDelete}/>)
         }
       </Tbody>
     </Table>
